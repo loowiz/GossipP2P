@@ -1,9 +1,12 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Peer {
     String peerIP;
     int peerPort;
+    List<String> peerFiles;
     String peerFolder;
     String neighborAIP;
     int neighborAPort;
@@ -22,10 +25,12 @@ public class Peer {
      * @param neighborBIP The second known neighbor IP.
      * @param neighborBPort The second known neighbor Port.
      */
-    public Peer(String peerIP, int peerPort, String peerFolder, String neighborAIP, int neighborAPort, String neighborBIP, int neighborBPort) {
+    public Peer(String peerIP, int peerPort, String peerFolder, String neighborAIP, int neighborAPort,
+                String neighborBIP, int neighborBPort) {
         this.peerIP = peerIP;
         this.peerPort = peerPort;
         this.peerFolder = peerFolder;
+        this.peerFiles = listFiles();
         this.neighborAIP = neighborAIP;
         this.neighborAPort = neighborAPort;
         this.neighborBIP = neighborBIP;
@@ -36,13 +41,50 @@ public class Peer {
     /**
      * Go to the peer folder and see what is inside.
      *
-     * @return a String array with the files on the peer folder.
+     * @return a String List with the files on the peer folder.
      */
-    public String[] listFiles(){
+    public List<String> listFiles(){
         File fileDir = new File(peerFolder);
-        String[] listFileNames = fileDir.list();
+        String[] files = fileDir.list();
 
-        return listFileNames;
+        List<String> filesList = new ArrayList();
+        for (String file : files) {
+            filesList.add(file);
+        }
+
+        return filesList;
+    }
+
+    /**
+     * Print the list of Peer X files.
+     *
+     * @return a String to print.
+     */
+    public String printListOfFiles() {
+        StringBuilder toPrint = new StringBuilder();
+        for (String list : this.peerFiles) {
+            toPrint.append(list);
+            toPrint.append("\n");
+        }
+
+        return toPrint.toString();
+    }
+
+
+    /**
+     * Get the new files on the Peer X folder.
+     *
+     * @param newList is the new check of folder contents.
+     *
+     * @return only the new files.
+     */
+    public List<String> hasNewFiles(List<String> newList) {
+        List<String> newFiles = new ArrayList();
+
+        newFiles.addAll(newList);
+        newFiles.removeAll(this.peerFiles);
+
+        return newFiles;
     }
 
 
@@ -67,18 +109,18 @@ public class Peer {
         System.out.print("Neighbor B Port: ");
         int neighborBPort = scanner.nextInt();
         scanner.nextLine();
-        System.out.println("");
+        System.out.println();
 
         Peer p1 = new Peer(peerXIP, peerXPort, peerXFolder, neighborAIP, neighborAPort, neighborBIP, neighborBPort);
 
-        StringBuilder test = new StringBuilder();
-        for (String dir : p1.listFiles()) {
-            test.append(dir);
-            test.append("\n");
-        }
-        System.out.println(test);
+        System.out.println(p1.printListOfFiles());
+
+        PeriodicTask t1 = new PeriodicTask(30);
+        t1.start();
+
+        // TODO:
+
+        t1.stop();
 
     }
-
-
 }
