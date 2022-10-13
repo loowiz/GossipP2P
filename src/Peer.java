@@ -1,7 +1,5 @@
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Peer {
     String peerIP;
@@ -12,7 +10,7 @@ public class Peer {
     int neighborAPort;
     String neighborBIP;
     int neighborBPort;
-
+    private static final boolean debug = false;
 
     /**
      * The constructor for Peer X.
@@ -37,7 +35,6 @@ public class Peer {
         this.neighborBPort = neighborBPort;
     }
 
-
     /**
      * Go to the peer folder and see what is inside.
      *
@@ -60,16 +57,15 @@ public class Peer {
      *
      * @return a String to print.
      */
-    public String printListOfFiles() {
+    public String printListOfFiles(List<String> l) {
         StringBuilder toPrint = new StringBuilder();
-        for (String list : this.peerFiles) {
+        for (String list : l) {
             toPrint.append(list);
-            toPrint.append("\n");
+            toPrint.append(" ");
         }
 
         return toPrint.toString();
     }
-
 
     /**
      * Get the new files on the Peer X folder.
@@ -87,6 +83,21 @@ public class Peer {
         return newFiles;
     }
 
+    /**
+     * Get the removed files of the Peer X folder.
+     *
+     * @param newList is the new check of folder contents.
+     *
+     * @return only the removed files.
+     */
+    public List<String> hasRemovedFiles(List<String> newList) {
+        List<String> removedFiles = new ArrayList();
+
+        removedFiles.addAll(this.peerFiles);
+        removedFiles.removeAll(newList);
+
+        return removedFiles;
+    }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -113,14 +124,76 @@ public class Peer {
 
         Peer p1 = new Peer(peerXIP, peerXPort, peerXFolder, neighborAIP, neighborAPort, neighborBIP, neighborBPort);
 
-        System.out.println(p1.printListOfFiles());
+        if(debug) System.out.println(p1.printListOfFiles(p1.peerFiles));
 
-        PeriodicTask t1 = new PeriodicTask(30);
-        t1.start();
+        PeriodicTask t1 = new PeriodicTask(30, p1);
+        t1.start(p1);
 
+        while(true);
         // TODO:
 
-        t1.stop();
+        //t1.stop();
 
+    }
+}
+
+/**
+ * Class PeriodicTask is used for periodic actions with timer threads.
+ */
+class PeriodicTask extends TimerTask {
+    private int period;
+    Timer timer;
+    Peer p;
+    private static final boolean debug = false;
+
+    /**
+     * The constructor to PeriodicTask.
+     *
+     * @param period is the period in seconds.
+     */
+    public PeriodicTask(int period, Peer p) {
+        this.period = period;
+        this.p = p;
+        this.timer = new Timer(true);
+    }
+
+    /**
+     * Start the periodic task.
+     */
+    public void start(Peer p) {
+        TimerTask timerTask = new PeriodicTask(period, p);
+        timer.scheduleAtFixedRate(timerTask, 0, period*1000);
+        if(debug) System.out.println("Started the periodic check for new files!");
+    }
+
+    /**
+     * Stop the periodic task.
+     */
+    public void stop(){
+        timer.cancel();
+    }
+
+    @Override
+    public void run() {
+        if(debug) System.out.println("New check at: " + new Date());
+
+        System.out.print("Sou peer " + p.peerIP + ":" + p.peerPort + " com arquivos ");
+        System.out.println(p.printListOfFiles(p.peerFiles));
+
+        List<String> newCheck = p.listFiles();
+        List<String> newFiles = p.hasNewFiles(newCheck);
+        List<String> removedFiles = p.hasRemovedFiles(newCheck);
+
+        if (!newFiles.isEmpty()) {
+            p.peerFiles.addAll(newFiles);
+            if(debug) System.out.println("New file(s) added!");
+            if(debug) System.out.println(p.printListOfFiles(newFiles));
+        } else if (!removedFiles.isEmpty()) {
+            p.peerFiles.removeAll(removedFiles);
+            if(debug) System.out.println("File(s) removed!");
+            if(debug) System.out.println(p.printListOfFiles(removedFiles));
+        } else {
+            if(debug) System.out.println("The list of files is up to date!\n");
+        }
     }
 }
