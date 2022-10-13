@@ -10,7 +10,7 @@ public class Peer {
     int neighborAPort;
     String neighborBIP;
     int neighborBPort;
-    private static final boolean debug = false;
+    private static final boolean debug = true;
 
     /**
      * The constructor for Peer X.
@@ -102,30 +102,37 @@ public class Peer {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Welcome new peer!");
-        System.out.print("Peer X IP address: ");
+        /* --------------------------------------------------
+        b)	Inicialização: captura do teclado o IP e porta do peer X, a pasta onde estão localizados seus arquivos,
+            e o IP e porta de outros dois peers.
+        -------------------------------------------------- */
+        if(debug) System.out.println("Welcome new peer!");
+        if(debug) System.out.print("Peer X IP address: ");
         String peerXIP = scanner.nextLine();
-        System.out.print("Peer X Port: ");
+        if(debug) System.out.print("Peer X Port: ");
         int peerXPort = scanner.nextInt();
         scanner.nextLine();
-        System.out.print("Peer X folder path: ");
+        if(debug) System.out.print("Peer X folder path: ");
         String peerXFolder = scanner.nextLine();
-        System.out.print("Neighbor A IP address: ");
+        if(debug) System.out.print("Neighbor A IP address: ");
         String neighborAIP = scanner.nextLine();
-        System.out.print("Neighbor A Port: ");
+        if(debug) System.out.print("Neighbor A Port: ");
         int neighborAPort = scanner.nextInt();
         scanner.nextLine();
-        System.out.print("Neighbor B IP address: ");
+        if(debug) System.out.print("Neighbor B IP address: ");
         String neighborBIP = scanner.nextLine();
-        System.out.print("Neighbor B Port: ");
+        if(debug) System.out.print("Neighbor B Port: ");
         int neighborBPort = scanner.nextInt();
         scanner.nextLine();
-        System.out.println();
+        if(debug) System.out.println();
 
         Peer p1 = new Peer(peerXIP, peerXPort, peerXFolder, neighborAIP, neighborAPort, neighborBIP, neighborBPort);
 
-        if(debug) System.out.println(p1.printListOfFiles(p1.peerFiles));
-
+        /* --------------------------------------------------
+        c)	Monitoramento da pasta: cada 30 segundos o peer verificará se na pasta (capturada na inicialização)
+            houveram modificações, ou seja se foram inseridos ou removidos arquivos. A lista de arquivos deverá
+            estar armazenada em alguma estrutura na memória, por exemplo, uma lista ou um hash.
+        -------------------------------------------------- */
         PeriodicTask t1 = new PeriodicTask(30, p1);
         t1.start(p1);
 
